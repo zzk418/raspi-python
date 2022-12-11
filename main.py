@@ -86,11 +86,14 @@ def Speech(access_token):
     headers = {'Content-Type': 'application/json'}
     WAVE_FILE = "beginSpeech.wav"
     # begin Speech
-    answers = ["我在, 请说话.", "来了,来了,我来了!", ",哥,我是小派!", "我是机智可爱的小派,有何指示?"]
+    answers = ["我在, 请说话.", "来了,我来了!", ",哥,我是小派!", "我是小派,有何指示?"]
     baidu_tts(answers[randomNumber(answers)])
     print("小派开始录音了,录音时间3s!")
+    # os.system(
+        # 'arecord -d 3 -r 16000 -c 1 -t wav -f S16_LE -D plughw:1,0  beginSpeech.wav')  # 采集音频
+    # The pi may not have 16000 sample rate
     os.system(
-        'arecord -d 3 -r 16000 -c 1 -t wav -f S16_LE -D plughw:1,0  beginSpeech.wav')  # 采集音频
+        'arecord -d 3 -c 1 -t wav -f S16_LE -D plughw:1,0  beginSpeech.wav')  # 采集音频
     print("录音结束,语音识别中...")
     f = open(WAVE_FILE, "rb")  # 以二进制读模式打开输入音频
     speech = base64.b64encode(f.read())  # 读音频文件并使用base64编码
