@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import subprocess as sp
 import _thread  # 多线程模块
 import sys
 import Adafruit_DHT
@@ -78,6 +78,19 @@ def getaccess_token():
     # print(access_token)
     return access_token
 
+def run_cmd(cmd):
+    """
+    run command by using subprocess,
+    raise exception when error has happened
+    return standard output and standard error
+    """
+    cp = sp.run(cmd,shell=True,capture_output=True,encoding="utf-8")
+    if cp.returncode != 0:
+        error = f"""Something wrong has happened when running command [{cmd}]:
+         {cp.stderr}"""
+        raise Exception(error)
+    return cp.stdout, cp.stderr
+
 
 # 在线语音识别  与逻辑处理
 def Speech(access_token):
@@ -89,11 +102,11 @@ def Speech(access_token):
     answers = ["我在, 请说话.", "来了,我来了!", ",哥,我是小派!", "我是小派,有何指示?"]
     baidu_tts(answers[randomNumber(answers)])
     print("小派开始录音了,录音时间3s!")
-    # os.system(
-        # 'arecord -d 3 -r 16000 -c 1 -t wav -f S16_LE -D plughw:1,0  beginSpeech.wav')  # 采集音频
+    cmdmsg = run_cmd('arecord -d 3 -r 16000 -f S16_LE -D "plughw:1,0" beginSpeech.wav')  # 采集音频
+    print(cmdmsg)
     # The pi may not have 16000 sample rate
-    os.system(
-        'arecord -d 3 -c 1 -t wav -f S16_LE -D plughw:1,0  beginSpeech.wav')  # 采集音频
+    # os.system(
+    #     'arecord -d 3 -c 1 -t wav -f S16_LE -D plughw:1,0  beginSpeech.wav')  # 采集音频
     print("录音结束,语音识别中...")
     f = open(WAVE_FILE, "rb")  # 以二进制读模式打开输入音频
     speech = base64.b64encode(f.read())  # 读音频文件并使用base64编码
@@ -125,14 +138,15 @@ def Speech(access_token):
             fan.set_on()
             baidu_tts("哥,风扇已关闭.")
         else:
-            baidu_tts(tuling(words))
+            baidu_tts("我没有理解您说的",words)
     else:
         baidu_tts("对不起,小派没有听清.")
 
 
-# 百度语音合成
+# 百度语音合成 test to speech
 def baidu_tts(words):
-    result = client.synthesis(words, 'zh', 1, {'vol': 5, 'per': 4})  # 请求参数
+    # pereference 3 度逍遥
+    result = client.synthesis(words, 'zh', 1, {'vol': 5, 'per': 3})  
     if not isinstance(result, dict):  # 识别正确返回语音二进制 错误则返回dict
         with open('audio.mp3', 'wb') as f:  # wb表示二进制写入
             f.write(result)
