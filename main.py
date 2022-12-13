@@ -258,18 +258,21 @@ def verify():
 
 # 热释电红外传感器监控
 def humanMonitoring():
-    if human.is_on():  # 监测高电平则表示热释电红外传感器监测到异常
-        print("监测到有人靠近...开始人脸检测...")
-        img = get_picture()  # 摄像头采集图像
-        result = monitorSearch(img, access_token)  # 将采集到的图像上传百度云人脸库搜索
-        if result == 1:  # 图像搜索不到则表示陌生物体靠近
-            led2.blink()  # 红灯警告
-            # ftp_upload()  # 上传FTP服务器
-            mqttClient.publish(topics['topic3'], json.dumps(
-                {"human": 1}), 0)  # 发布MQTT消息到阿里云物联网平台
-            # send_shortMessage()  # 发送告警短信到用户手机
-    else:
-        pass
+    # if human.is_on():  
+    #     print("监测到有人靠近...开始人脸检测...")
+    #     img = get_picture()  # 摄像头采集图像
+    #     result = monitorSearch(img, access_token)  # 将采集到的图像上传百度云人脸库搜索
+    #     if result == 1:  # 图像搜索不到则表示陌生物体靠近
+    #         led2.blink()  # 红灯警告
+    #         # ftp_upload()  # 上传FTP服务器
+    #         mqttClient.publish(topics['topic3'], json.dumps(
+    #             {"human": 1}), 0)  # 发布MQTT消息到阿里云物联网平台
+    #         # send_shortMessage()  # 发送告警短信到用户手机
+    # else:
+    #     pass
+   
+   # test
+   pass
 
 
 # MQ-2烟雾传感器监控
@@ -342,7 +345,7 @@ def getDHT11Data():
 
 
 def on_mjpegstreamer_start():
-    os.system("sh /home/pi/mjpg-streamer/mjpg-streamer-experimental/start.sh")
+    run_cmd("sh /home/pi/mjpg-streamer/mjpg-streamer-experimental/start.sh")
 
 
 def callbacks():
