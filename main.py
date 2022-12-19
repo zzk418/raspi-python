@@ -39,9 +39,21 @@ baidu_config = {
 
 # 阿里云物联网平台mqtt连接参数
 aliyun_config = {
+    # "clientId":"i0n2di0c8Cc.raspi|securemode=2,signmethod=hmacsha256,timestamp=1671462393341|",
+    # "username":"raspi&i0n2di0c8Cc",
+    # "mqttHostUrl":"iot-06z00iw7up2z0ab.mqtt.iothub.aliyuncs.com",
+    # "passwd":"40acf2f52faa18c7be031c06597b8bc502dccbbdbf361b5833901f5a35dd621e",
+    # "port":1883
+        
+    # 'productKey': 'i0n2di0c8Cc',
+    # 'deviceName': 'raspi',
+    # 'deviceSecret': '09068162a90427ba9fe8582b0b7fc3bca8162244e3baf7f0d5434b57ea4ef9e1',
+    # 'port': 1883,
+    # 'host': 'i0n2di0c8Cc.iot-as-mqtt.cn-shanghai.aliyuncs.com'
+
     'productKey': 'i0n2di0c8Cc',
     'deviceName': 'raspi',
-    'deviceSecret': '09068162a90427ba9fe8582b0b7fc3bca8162244e3baf7f0d5434b57ea4ef9e1',
+    'deviceSecret': '7a924ec27ace79225364db7b66caf9fb',
     'port': 1883,
     'host': 'i0n2di0c8Cc.iot-as-mqtt.cn-shanghai.aliyuncs.com'
 }
@@ -65,9 +77,9 @@ topics = {
 #     'sms_sign': '智能小派家居控制终端'
 # }
 
-dht11=[0,0]
 
-# 获取百度云token  client_id和client_secret需要替换成上面baidu_config的API_KEY和SECRET_KEY
+
+# 获取百度云token
 def getaccess_token():
     host = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=cqnAOIksYK6mFkwToYpRpjil&client_secret=4ssnT8EZceyvDuDCXtxk0jpCzBS6O86w'
     header_1 = {
@@ -345,7 +357,7 @@ def getDHT11Data():
 
 
 def on_mjpegstreamer_start():
-    run_cmd("sh /home/pi/mjpg-streamer/mjpg-streamer-experimental/start.sh")
+    os.system("sh /home/pi/mjpg-streamer/mjpg-streamer-experimental/start.sh")
 
 
 def callbacks():
@@ -386,7 +398,7 @@ def on_mqtt_connect():
     mqttClient.on_disconnect = on_disconnect
     mqttClient.on_message = on_message
     mqttClient.connect(
-        host=aliyun_config['host'], port=aliyun_config['port'], keepalive=60)
+        host=aliyun_config['host'], port=aliyun_config['port'], keepalive=100)
     mqttClient.loop_forever()
 
 
