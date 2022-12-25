@@ -1,29 +1,26 @@
 # -*- coding: utf-8 -*-
 import subprocess as sp
-import _thread  # 多线程模块
+import _thread  
 import sys
 import Adafruit_DHT
-import re  # 正则表达式
-import random  # 随机数模块
-import time  # 时间模块
-import base64  # base64编码解码
-import signal  # 处理信号
-import os  # 调用系统命令
-import urllib3  # 请求url连接
+import re  
+import random  
+import time  
+import base64  
+import signal  
+import os  
+import urllib3  
 import urllib.request
 import requests
-import json  # 编码和解码 JSON 对象
+import json  
 import snowboydecoder  # snowboy唤醒
-import RPi.GPIO as GPIO  # 控制树莓派GPIO
+import RPi.GPIO as GPIO  
 import aliyunsdkiotclient.AliyunIotMqttClient as iot  # 阿里云平台mqtt连接
 from init import Init, Light  # GPIO初始化
 from aip import AipSpeech  # 百度语音sdk
-from ftplib import FTP  # ftp连接
 from MyEncoder import MyEncoder  # 自定义json序列化
 from urllib.error import HTTPError, URLError  # URLError与HTTPError的异常处理
 from http.client import IncompleteRead, RemoteDisconnected
-# from qcloudsms_py import SmsSingleSender  # 腾讯云短信
-# from qcloudsms_py.httpclient import HTTPError
 
 
 # 关闭 requests 的 InsecureRequestWarning
@@ -198,18 +195,6 @@ def faceSearch(img, access_token):
         wake_up()
 
 
-# 图灵机器人智能对话
-def tuling(words):
-    request_url = "http://openapi.tuling123.com/openapi/api/v2"
-    api_key = "e01ee05ea2164b*******ae3274a8"
-    headers = {'content-type': 'application/json'}
-    request_data = {"userInfo": {"apiKey": api_key, "userId": "zhanghuilin"},
-                    "perception": {"inputText": {"text": words}}}
-    response = requests.post(
-        request_url, data=json.dumps(request_data), headers=headers)
-    response_text = response.json()["results"][0]["values"]["text"]
-    return response_text
-
 
 # 监控人脸认证
 def monitorSearch(img, access_token):
@@ -245,19 +230,6 @@ def get_picture(num_retries=3):
     f = open('people.jpg', 'rb')
     img = base64.b64encode(f.read())
     return img
-
-
-# 上传FTP服务器
-# def ftp_upload():
-#     ftp = FTP()
-#     # 第一个参数可以是ftp服务器的ip或者域名，第二个参数为ftp服务器的连接端口，默认为21
-#     ftp.connect("103.40.**.212", 21)
-#     ftp.login('root', '123456')  # 匿名登录直接使用ftp.login()
-#     ftp.cwd("/resource/images")  # 切换到/resource/images目录
-#     fp = open("people.jpg", "rb")  # 打开摄像头采集到的图像
-#     ftp.storbinary("STOR {}".format('illegalPerson.jpg'), fp, 1024)  # 上传图像到服务器
-#     fp.close()
-#     ftp.quit()
 
 
 # 身份认证
@@ -337,23 +309,6 @@ def getDHT11Data():
         return temperature, humidity
     else:
         return 0
-
-
-
-# 发送报警短信
-# def send_shortMessage():
-#     ssender = SmsSingleSender(
-#         shortMessage_config['appid'], shortMessage_config['appkey'])
-#     params = []
-#     try:
-#         result = ssender.send_with_param(86, shortMessage_config['phone_numbers'],
-#                                          shortMessage_config['template_id'], params,
-#                                          sign=shortMessage_config['sms_sign'], extend="", ext="")
-#     except HTTPError as e:
-#         print(e)
-#     except Exception as e:
-#         print(e)
-#     print(result)
 
 
 def on_mjpegstreamer_start():
