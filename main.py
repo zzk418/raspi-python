@@ -1,29 +1,30 @@
 # -*- coding: utf-8 -*-
+import _thread
+import base64
+import json
+import os
+import random
+import re
+import signal
 import subprocess as sp
-import _thread  
 import sys
-import Adafruit_DHT
-import re  
-import random  
-import time  
-import base64  
-import signal  
-import os  
-import urllib3  
+import time
 import urllib.request
-import requests
-import json  
-import snowboydecoder  # snowboy唤醒
-import RPi.GPIO as GPIO  
-import aliyunsdkiotclient.AliyunIotMqttClient as iot  # 阿里云平台mqtt连接
-from init import Init, Light  # GPIO初始化
-from aip import AipSpeech  # 百度语音sdk
-from MyEncoder import MyEncoder  # 自定义json序列化
-from urllib.error import HTTPError, URLError  # URLError与HTTPError的异常处理
 from http.client import IncompleteRead, RemoteDisconnected
+from urllib.error import HTTPError, URLError  # URLError与HTTPError的异常处理
 
+import Adafruit_DHT
+import aliyunsdkiotclient.AliyunIotMqttClient as iot  # 阿里云平台mqtt连接
+import requests
+import RPi.GPIO as GPIO
+import urllib3
+from aip import AipSpeech  # 百度语音sdk
 
-# 关闭 requests 的 InsecureRequestWarning
+import snowboydecoder  # snowboy唤醒
+from init import Init, Light  # GPIO初始化
+from MyEncoder import MyEncoder  # 自定义json序列化
+
+#InsecureRequestWarning
 urllib3.disable_warnings()
 interrupted = False
 
@@ -36,18 +37,6 @@ baidu_config = {
 
 # 阿里云物联网平台mqtt连接参数
 aliyun_config = {
-    # "clientId":"i0n2di0c8Cc.raspi|securemode=2,signmethod=hmacsha256,timestamp=1671462393341|",
-    # "username":"raspi&i0n2di0c8Cc",
-    # "mqttHostUrl":"iot-06z00iw7up2z0ab.mqtt.iothub.aliyuncs.com",
-    # "passwd":"40acf2f52faa18c7be031c06597b8bc502dccbbdbf361b5833901f5a35dd621e",
-    # "port":1883
-        
-    # 'productKey': 'i0n2di0c8Cc',
-    # 'deviceName': 'raspi',
-    # 'deviceSecret': '09068162a90427ba9fe8582b0b7fc3bca8162244e3baf7f0d5434b57ea4ef9e1',
-    # 'port': 1883,
-    # 'host': 'i0n2di0c8Cc.iot-as-mqtt.cn-shanghai.aliyuncs.com'
-
     'productKey': 'i0n2di0c8Cc',
     'deviceName': 'raspi',
     'deviceSecret': '7a924ec27ace79225364db7b66caf9fb',
@@ -64,15 +53,6 @@ topics = {
     'topic3': topicHead + '/user/putHumanMonitor',
     'topic4': topicHead + '/user/putSmokeStatus'
 }
-
-# 腾讯云短信接口连接参数
-# shortMessage_config = {
-#     'appid': '14***52671',
-#     'appkey': 'ad37309184fae22****1c7bf4aaaacd2',
-#     'phone_numbers': '130***2736',
-#     'template_id': '57**26',
-#     'sms_sign': '智能小派家居控制终端'
-# }
 
 
 
@@ -132,8 +112,6 @@ def Speech(access_token):
             temperature, humidity = getDHT11Data()
             words = "哥,室内温度:" + str(temperature) + ",室内湿度:" + str(humidity)
             baidu_tts(words)
-        elif re.findall('[天气]', words):
-            baidu_tts(str(getWeatherData()))
         elif re.findall('开.*灯', words):
             led1.set_on()
             baidu_tts("哥,灯已打开.")
@@ -277,23 +255,6 @@ def randomNumber(str):
     num = random.randint(0, length - 1)
     return num
 
-
-# 获取天气
-def getWeatherData():
-    # 实况天气
-    url_now = "https://free-api.heweather.net/s6/weather/now?location=350881&key=c27e71cb950745c6afd03fcca77477b4"
-    # 生活指数
-    url_lifestyle = "https://free-api.heweather.net/s6/weather/lifestyle?location=350881&key=c27e71cb950745c6afd03fcca77477b4"
-    response_now = requests.get(url=url_now)
-    response_lifestyle = requests.get(url=url_lifestyle)
-    self_now = response_now.json()
-    self_lifestyle = response_lifestyle.json()
-    data = self_now['HeWeather6'][0]['basic']['location'] + '实时天气:' + self_now['HeWeather6'][0]['now'][
-        'cond_txt'] + ',温度:' + \
-           self_now['HeWeather6'][0]['now']['tmp'] + ',湿度:' + self_now['HeWeather6'][0]['now']['hum'] + ',风力:' + \
-           self_now['HeWeather6'][0]['now']['wind_sc'] + '级,' + \
-           self_lifestyle['HeWeather6'][0]['lifestyle'][0]['txt']
-    return data
 
 # dht11数据发布IOT
 def getDHT11Data():
