@@ -1,10 +1,9 @@
 '''
 Author: zhangzhikai zzkbean@163.com
-Date: 2022-12-27 09:52:58
-LastEditors: zhangzhikai zzkbean@163.com
-LastEditTime: 2022-12-27 11:00:31
+Date: 2022-12-2 09:52:58
+LastEditTime: 2022-12-28 12:16:30
 FilePath: /raspi-python/face_detect.py
-Description: [Edit]
+Description: 人脸识别成功开门, 人脸识别失败入侵报警信息和入侵者抓拍发送到移动端
 
 Copyright (c) 2022 by zhangzhikai zzkbean@163.com, All Rights Reserved. 
 '''
@@ -27,8 +26,20 @@ baidu_config = {
 client = AipSpeech(
         baidu_config['APP_ID'], baidu_config['API_KEY'], baidu_config['SECRET_KEY'])
 
+# 获取百度云token
+def getaccess_token():
+    host = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=cqnAOIksYK6mFkwToYpRpjil&client_secret=4ssnT8EZceyvDuDCXtxk0jpCzBS6O86w'
+    header_1 = {
+        'Content-Type': 'application/json; charset=UTF-8', 
+    }
+    request = requests.post(host, headers=header_1)
+    access_token = request.json()['access_token']
+    # print(access_token)
+    return access_token
 
-def verify(access_token):
+access_token = "24.9750ed527e2ecf5dd4d7dd0a9a235c3d.2592000.1673324251.282335-28833160"
+
+def face_verify(access_token=access_token):
     print("开始认证...")
     img = get_picture()
     faceSearch(img, access_token)
@@ -45,9 +56,9 @@ def get_picture(num_retries=3):
             content = response.read()  # 获得图片
             f.write(content)  # 保存图片
             response.close()
-    except HTTPError as e:  # HTTP响应异常处理
-        print(e.reason)
-    except URLError as e:  # 一定要放到HTTPError之后，因为它包含了前者
+    # except HTTPError as e:  # HTTP响应异常处理
+    #     print(e.reason)
+    except URLError as e:  # 放到HTTPError之后，因为它包含了前者
         print(e.reason)
     # except IncompleteRead or RemoteDisconnected as e:
     #     if num_retries == 0:  # 重连机制
@@ -91,7 +102,7 @@ def faceSearch(img, access_token):
         baidu_tts("对不起,认证失败!,请重新刷脸")
         time.sleep(1) 
         if err_count < 3:
-            verify(access_token)
+            face_verify(access_token)
         else:
             baidu_tts("已报警！")
         
@@ -116,5 +127,4 @@ def baidu_tts(words):
         print(result)
 
 if __name__ == '__main__':
-    access_token = "24.9750ed527e2ecf5dd4d7dd0a9a235c3d.2592000.1673324251.282335-28833160"
-    verify(access_token)
+    face_verify(access_token)

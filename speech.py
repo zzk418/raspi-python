@@ -1,18 +1,24 @@
 '''
-Author: zhangzhikai zzkbean@163.com
-Date: 2022-12-27 07:44:20
-LastEditors: zhangzhikai zzkbean@163.com
-LastEditTime: 2022-12-27 09:31:17
+Author: zhangzhiyuan zhaoboyao
+Date: 2022-12-18 07:44:20
+LastEditTime: 2022-12-28 06:11:49
 FilePath: /raspi-python/speech.py
-Description: [Edit]
+Description: 语音交互控制家用设备
 
-Copyright (c) 2022 by zhangzhikai zzkbean@163.com, All Rights Reserved. 
+Copyright (c) 2022 by zhangzhiyuan zhaoboyao, All Rights Reserved. 
 '''
+import os
+import re
+import random
 import signal
-
 import requests
-
+import subprocess as sp
 import snowboydecoder
+import base64
+import json
+from MyEncoder import MyEncoder
+from init import Init, Light
+from aip import AipSpeech  # 百度语音sdk
 
 # 百度云api连接参数
 baidu_config = {
@@ -32,6 +38,8 @@ def getaccess_token():
     # print(access_token)
     return access_token
 
+access_token = "24.9750ed527e2ecf5dd4d7dd0a9a235c3d.2592000.1673324251.282335-28833160"
+
 def wake_up():
     global detector
     # model = '/home/pi/snowboy/resources/xiaopai.pmdl'
@@ -44,9 +52,20 @@ def wake_up():
                    interrupt_check=interrupt_callback, sleep_time=0.03)
     detector.terminate()
 
+interrupted = False
 def signal_handler(signal, frame):
     global interrupted
     interrupted = True
+
+def interrupt_callback():
+    global interrupted
+    return interrupted
+
+# 生成随机数
+def randomNumber(str):
+    length = len(str)
+    num = random.randint(0, length - 1)
+    return num
 
 def callbacks():
     global detector
@@ -80,6 +99,8 @@ def Speech(access_token):
          "speech": speech, "len": size}, cls=MyEncoder, indent=4)  # 请求数据格式
     response = requests.post(request_url, data=data_json,
                              headers=headers)  # 发起requests post请求
+
+    led1, fan = init_device()
     if response.json().get('err_msg') == 'success.':  # 处理返回数据
         words = response.json().get('result')[0]
         print("您说的是:" + words)
@@ -100,10 +121,22 @@ def Speech(access_token):
             fan.set_on()
             baidu_tts("哥,风扇已关闭.")
         else:
-            baidu_tts("我没有理解您说的",words)
+            baidu_tts("我没有理解您说的",str(words))
     else:
         baidu_tts("对不起,小派没有听清.")
 
+# 初始化硬件设备
+def init_device():
+    led1 = Light(18)  # led1 
+    led2 = Light(5)  # led1 
+    fan = Init(22)  # 风扇 
+    # dht = Init(12)  # dht11 
+    smoke = Init(20)  # 烟雾传感器 
+    human = Init(17)  # 热释电红外传感器
+    return led1, fan
+
+client = AipSpeech(
+        baidu_config['APP_ID'], baidu_config['API_KEY'], baidu_config['SECRET_KEY'])
 # 百度语音合成 test to speech
 def baidu_tts(words):
     #3 度逍遥
@@ -127,3 +160,8 @@ def run_cmd(cmd):
          {cp.stderr}"""
         raise Exception(error)
     return cp.stdout, cp.stderr
+
+
+
+if __name__ == '__main__':
+    wake_up()
